@@ -1,0 +1,10 @@
+node_modules/
+artifacts/solidcash/
+cache/
+dist/
+.env
+.env.*
+*.local
+e2e/failure.png
+flare.zip
+docs/dorahacks-submission.md

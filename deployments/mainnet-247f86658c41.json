@@ -1,0 +1,19 @@
+{
+  "network": "mainnet",
+  "title": "SolidStarter demo campaign",
+  "categoryId": "247f86658c41a6c5a9c1c68495598a1271efe22b8ad845126af631815316e560",
+  "address": "bitcoincash:rwfpss5vc85yy5nugsc0ec3ca5j59ph86tvu2k89ahrrtqffssrfgy23tflpp",
+  "deploymentTxid": "f9279ec53a2c9f1ef25902c1abb0a6667088bada3b21faad50444c2019d35332",
+  "deployer": "bitcoincash:qruv5d602ew8la93u3pl6uw5w9ft3pnavs8ptsfscu",
+  "constructorArgs": {
+    "creator": "03966eec736be4af708b322d2901ac8d421f75b6c8b1d56ff2ad00b3d581cfb756",
+    "beneficiaryPkh": "f8ca374f565c7ff4b1e443fd71d47152b8867d64",
+    "goal": "100000",
+    "deadline": 1795525123,
+    "deadlineIso": "2026-11-24T12:58:43.000Z",
+    "minPledge": "1000"
+  },
+  "costSats": "9719",
+  "shareLink": "https://solidstarter.pages.dev/#/c/bWFpbm5ldHwyNDdmODY2NThjNDFhNmM1YTljMWM2ODQ5NTU5OGExMjcxZWZlMjJiOGFkODQ1MTI2YWY2MzE4MTUzMTZlNTYwfDAzOTY2ZWVjNzM2YmU0YWY3MDhiMzIyZDI5MDFhYzhkNDIxZjc1YjZjOGIxZDU2ZmYyYWQwMGIzZDU4MWNmYjc1NnxmOGNhMzc0ZjU2NWM3ZmY0YjFlNDQzZmQ3MWQ0NzE1MmI4ODY3ZDY0fDEwMDAwMHwxNzk1NTI1MTIzfDEwMDA",
+  "deployedAt": "2026-11-21T12:59:14.326Z"
+}

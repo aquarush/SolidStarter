@@ -1,0 +1,43 @@
+{
+  "name": "solidstarter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@solidcash/solidc": "^0.51.1",
+    "@solidcash/solidhat": "^0.51.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "puppeteer-core": "^25.18.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^6.4.6",
+    "vitest": "^5.1.1"
+  },
+  "scripts": {
+    "compile": "solidhat compile",
+    "test": "solidhat test",
+    "deploy": "solidhat deploy",
+    "clean": "solidhat clean",
+    "sync-artifact": "solidhat compile && node -e \"require('fs').copyFileSync('artifacts/solidcash/SolidStarter.json','web/src/contract/SolidStarter.json')\"",
+    "dev": "vite",
+    "build": "tsc -p tsconfig.web.json && vite build",
+    "preview": "vite preview",
+    "e2e": "node e2e/demo-lifecycle.mjs",
+    "fix-lockfile": "node scripts/fix-lockfile.mjs",
+    "check-lockfile": "node scripts/fix-lockfile.mjs --check",
+    "verify": "npm run check-lockfile && npm test && npm run build && npm run e2e",
+    "e2e:live": "node e2e/live-wallet.mjs",
+    "package:cloudflare": "node scripts/package-cloudflare.mjs"
+  },
+  "dependencies": {
+    "@bitauth/libauth": "git+https://github.com/mainnet-pat/libauth.git#1cf4b432864b3a4ed9f33d1992355d7286f3dab8",
+    "@solidcash/solidcash": "^0.51.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

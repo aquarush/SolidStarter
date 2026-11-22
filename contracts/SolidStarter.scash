@@ -1,0 +1,155 @@
+pragma solidcash ^0.51.0;
+pragma satoshicontainer single;
+
+// SolidStarter: an all-or-nothing crowdfunding covenant for Bitcoin Cash.
+//
+// Backers pledge BCH into the campaign's satoshi container. The pledge ledger,
+// the funding goal, the deadline and every payout rule are enforced on chain:
+//   * while funding, a backer may withdraw their own pledge at any time;
+//   * once the goal is met, the creator can claim the whole pot for the beneficiary;
+//   * after the deadline (or if the creator cancels) without success, every
+//     backer can reclaim exactly what they pledged.
+
+uint256 constant BPS_DENOMINATOR = 10_000;
+
+/// Pure helpers, inlined at each call site.
+library PledgeMath {
+    /// Percentage of the goal reached, in basis points, capped at 100%.
+    function progressBps(uint256 raised, uint256 goal) internal pure returns (uint256) {
+        if (goal == 0) {
+            return BPS_DENOMINATOR;
+        }
+        uint256 bps = raised * BPS_DENOMINATOR / goal;
+        return bps > BPS_DENOMINATOR ? BPS_DENOMINATOR : bps;
+    }
+
+    function lockFor(pubkey backer) internal pure returns (bytes) {
+        return new LockingBytecodeP2PKH(hash160(backer));
+    }
+}
+
+using PledgeMath for uint256;
+
+/// Signature-gated administration shared by campaign contracts.
+abstract contract CreatorGuarded(pubkey creator) {
+    modifier onlyCreator(sig creatorSig) {
+        require(checkSig(creatorSig, creator), "not creator");
+        _;
+    }
+}
+
+contract SolidStarter(
+    pubkey creator,
+    bytes20 beneficiaryPkh,
+    uint64 goal,
+    uint32 deadline,
+    uint64 minPledge
+) is CreatorGuarded(creator) {
+    enum Phase { Funding, Succeeded, Failed }
+
+    error PledgeTooSmall(uint256 amount, uint256 minimum);
+    error WrongPhase(Phase current);
+    error NothingPledged();
+
+    event Pledged(bytes20 indexed backer, uint256 amount, uint256 totalRaised);
+    event Withdrawn(bytes20 indexed backer, uint256 amount);
+    event Refunded(bytes20 indexed backer, uint256 amount);
+    event Finalized(Phase outcome, uint256 totalRaised);
+    event Claimed(uint256 amount);
+
+    Phase public phase;
+    uint256 public raised;
+    uint256 public backerCount;
+    string public title;
+    mapping(bytes20 => uint256) public pledges;
+
+    constructor(string initialTitle) {
+        require(goal > 0);
+        require(minPledge >= 1000);
+        this.title = initialTitle;
+        this.phase = Phase.Funding;
+    }
+
+    modifier inPhase(Phase expected) {
+        if (this.phase != expected) {
+            revert WrongPhase(this.phase);
+        }
+        _;
+    }
+
+    /// Pledge the attached value (`withValue`) on behalf of `backer`.
+    /// The signature binds the pledge to the backer's key, so refunds can only go back to them.
+    function pledge(pubkey backer, sig backerSig) external payable inPhase(Phase.Funding) {
+        require(checkSig(backerSig, backer), "bad backer signature");
+        uint256 amount = msg.value;
+        if (amount < minPledge) {
+            revert PledgeTooSmall(amount, minPledge);
+        }
+
+        bytes20 id = hash160(backer);
+        if (this.pledges[id] == 0) {
+            this.backerCount += 1;
+        }
+        this.pledges[id] += amount;
+        this.raised += amount;
+        emit Pledged(id, amount, this.raised);
+    }
+
+    /// Change of heart while the campaign is still open: take your whole pledge back.
+    function withdraw(pubkey backer, sig backerSig) external inPhase(Phase.Funding) {
+        require(checkSig(backerSig, backer), "bad backer signature");
+        bytes20 id = hash160(backer);
+        uint256 amount = this.pledges[id];
+        if (amount == 0) {
+            revert NothingPledged();
+        }
+        delete this.pledges[id];
+        this.raised -= amount;
+        this.backerCount -= 1;
+        this.transfer(PledgeMath.lockFor(backer), amount);
+        emit Withdrawn(id, amount);
+    }
+
+    /// Anyone may settle the campaign once the deadline has passed.
+    function finalize() external inPhase(Phase.Funding) {
+        require(tx.time >= deadline, "deadline not reached");
+        Phase outcome = this.raised >= goal ? Phase.Succeeded : Phase.Failed;
+        this.phase = outcome;
+        emit Finalized(outcome, this.raised);
+    }
+
+    /// The creator may abort an open campaign; all backers can then reclaim.
+    function cancel(sig creatorSig) external onlyCreator(creatorSig) inPhase(Phase.Funding) {
+        this.phase = Phase.Failed;
+        emit Finalized(Phase.Failed, this.raised);
+    }
+
+    /// Refund path after a failed or cancelled campaign.
+    function refund(pubkey backer, sig backerSig) external inPhase(Phase.Failed) {
+        require(checkSig(backerSig, backer), "bad backer signature");
+        bytes20 id = hash160(backer);
+        uint256 amount = this.pledges[id];
+        if (amount == 0) {
+            revert NothingPledged();
+        }
+        delete this.pledges[id];
+        this.raised -= amount;
+        this.transfer(PledgeMath.lockFor(backer), amount);
+        emit Refunded(id, amount);
+    }
+
+    /// Goal reached: release the pot to the beneficiary. Works before the deadline too.
+    function claim(sig creatorSig) external onlyCreator(creatorSig) {
+        require(this.phase != Phase.Failed, "campaign failed");
+        require(this.raised >= goal, "goal not reached");
+        uint256 amount = this.raised;
+        this.phase = Phase.Succeeded;
+        this.raised = 0;
+        this.transfer(new LockingBytecodeP2PKH(beneficiaryPkh), amount);
+        emit Claimed(amount);
+    }
+
+    function progress() public view returns (uint256) {
+        return this.raised.progressBps(goal);
+    }
+}
