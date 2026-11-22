@@ -8,6 +8,7 @@ Backers can also change their mind and withdraw while the campaign is open. No c
 nobody (including the creator and this website) can bend the rules.
 
 **Live app:** <https://solidstarter.pages.dev> (open it and press Demo to try the full lifecycle with play money).
+**Source:** <https://github.com/aquarush/SolidStarter>
 
 > **Status:** SolidCash 0.51 is a beta compiler without an independent audit. Use small amounts on mainnet.
 
@@ -272,7 +273,10 @@ BLAZE 2026, *Best SolidCash Application*:
 - [x] Uses a wide range of SolidCash features and syntax (see the [feature table](#solidcash-features-used))
 - [x] Tested with **solidhat** under real mainnet limits, including adversarial cases
 - [x] Usable UI demonstrating the full contract lifecycle (in-browser demo plus chipnet and mainnet modes)
-- [ ] Deployed and run on BCH mainnet (record the transaction ids from `deployments/` here)
+- [x] Deployed on BCH mainnet: deployment tx
+  [`f9279ec5…d35332`](https://blockchair.com/bitcoin-cash/transaction/f9279ec53a2c9f1ef25902c1abb0a6667088bada3b21faad50444c2019d35332),
+  covenant `bitcoincash:rwfpss5vc85yy5nugsc0ec3ca5j59ph86tvu2k89ahrrtqffssrfgy23tflpp`
+  (details in [`deployments/mainnet-247f86658c41.json`](deployments/mainnet-247f86658c41.json))
 - [ ] Issues or pull requests filed upstream from [docs/solidcash-feedback.md](docs/solidcash-feedback.md)
 
 ## License
