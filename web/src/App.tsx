@@ -4,6 +4,7 @@ import { decodeRef, encodeRef, refKey, type CampaignRef, type NetworkName } from
 import { Home } from './components/Home';
 import { CampaignPage } from './components/CampaignPage';
 import { AccountBar } from './components/AccountBar';
+import { VoteBanner } from './components/VoteBanner';
 
 const SAVED_KEY = 'solidstarter.campaigns.v1';
 
@@ -109,21 +110,34 @@ export function App() {
         <a className="brand" href="#/">
           <span className="brand-mark" aria-hidden>◆</span> SolidStarter
         </a>
-        <nav className="network-switch" aria-label="Network">
-          {(['demo', 'chipnet', 'mainnet'] as NetworkName[]).map((n) => (
-            <button
-              key={n}
-              className={n === network ? 'active' : ''}
-              onClick={() => {
-                setNetwork(n);
-                if (route.name === 'campaign' && route.ref.network !== n) window.location.hash = '#/';
-              }}
-            >
-              {n === 'demo' ? 'Demo' : n === 'chipnet' ? 'Chipnet' : 'Mainnet'}
-            </button>
-          ))}
-        </nav>
+        <div className="topbar-right">
+          <a
+            className="slides-link"
+            href="/slides/SolidStarter-BLAZE2026.pdf"
+            target="_blank"
+            rel="noreferrer noopener"
+            title="View our BCH BLAZE 2026 presentation"
+          >
+            <span aria-hidden>▶</span> Slides
+          </a>
+          <nav className="network-switch" aria-label="Network">
+            {(['demo', 'chipnet', 'mainnet'] as NetworkName[]).map((n) => (
+              <button
+                key={n}
+                className={n === network ? 'active' : ''}
+                onClick={() => {
+                  setNetwork(n);
+                  if (route.name === 'campaign' && route.ref.network !== n) window.location.hash = '#/';
+                }}
+              >
+                {n === 'demo' ? 'Demo' : n === 'chipnet' ? 'Chipnet' : 'Mainnet'}
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
+
+      <VoteBanner />
 
       {network === 'mainnet' && (
         <div className="banner warn">
